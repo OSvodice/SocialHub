@@ -35,10 +35,15 @@ export const usePosts = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setPosts(data || []);
+      if (error) {
+        console.error('Error fetching posts:', error);
+        setPosts([]);
+      } else {
+        setPosts(data || []);
+      }
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -60,8 +65,11 @@ export const usePosts = () => {
           user_id: user.id
         });
 
-      if (error) throw error;
-      await fetchPosts(); // Refresh posts
+      if (error) {
+        console.error('Error creating post:', error);
+      } else {
+        await fetchPosts(); // Refresh posts
+      }
     } catch (error) {
       console.error('Error creating post:', error);
     }
