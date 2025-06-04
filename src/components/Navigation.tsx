@@ -1,16 +1,19 @@
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, User, MessageSquare } from "lucide-react";
+import { Home, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 interface NavigationProps {
-  user: any;
   currentView: string;
   onViewChange: (view: string) => void;
-  onLogout: () => void;
 }
 
-export const Navigation = ({ user, currentView, onViewChange, onLogout }: NavigationProps) => {
+export const Navigation = ({ currentView, onViewChange }: NavigationProps) => {
+  const { signOut } = useAuth();
+  const { profile } = useProfile();
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,13 +55,13 @@ export const Navigation = ({ user, currentView, onViewChange, onLogout }: Naviga
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
+              <AvatarFallback>{profile?.full_name?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
             <Button
               variant="outline"
               size="sm"
-              onClick={onLogout}
+              onClick={signOut}
               className="hidden sm:inline-flex"
             >
               Logout

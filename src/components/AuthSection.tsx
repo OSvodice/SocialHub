@@ -3,22 +3,46 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, MessageSquare, Heart } from "lucide-react";
+import { Users, MessageSquare, Heart, AlertCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
-interface AuthSectionProps {
-  onLogin: (user: any) => void;
-}
-
-export const AuthSection = ({ onLogin }: AuthSectionProps) => {
+export const AuthSection = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock authentication - in real app, this would connect to Supabase
-    onLogin({ email, name: name || "Demo User" });
+    setError("");
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setError(error.message);
+        }
+      } else {
+        if (!fullName.trim()) {
+          setError("Please enter your full name");
+          return;
+        }
+        const { error } = await signUp(email, password, fullName);
+        if (error) {
+          setError(error.message);
+        } else {
+          setError("Check your email for the confirmation link!");
+        }
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,15 +89,22 @@ export const AuthSection = ({ onLogin }: AuthSectionProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <span className="text-sm text-red-700">{error}</span>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">Name</label>
+                  <label htmlFor="fullName" className="text-sm font-medium">Full Name</label>
                   <Input
-                    id="name"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    id="fullName"
+                    placeholder="Enter your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     required={!isLogin}
                   />
                 </div>
@@ -103,15 +134,22 @@ export const AuthSection = ({ onLogin }: AuthSectionProps) => {
                 />
               </div>
               
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                {isLogin ? "Sign In" : "Create Account"}
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {loading ? "Loading..." : (isLogin ? "Sign In" : "Create Account")}
               </Button>
             </form>
             
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError("");
+                }}
                 className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
               >
                 {isLogin 

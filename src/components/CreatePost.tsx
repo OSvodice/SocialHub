@@ -4,21 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Image, Video } from "lucide-react";
+import { usePosts } from "@/hooks/usePosts";
 
-interface CreatePostProps {
-  onCreatePost: (post: { content: string; image?: string }) => void;
-}
-
-export const CreatePost = ({ onCreatePost }: CreatePostProps) => {
+export const CreatePost = () => {
   const [content, setContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createPost } = usePosts();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (content.trim()) {
-      onCreatePost({ content });
+    if (content.trim() && !isSubmitting) {
+      setIsSubmitting(true);
+      await createPost(content);
       setContent("");
       setIsExpanded(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -70,10 +71,10 @@ export const CreatePost = ({ onCreatePost }: CreatePostProps) => {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={!content.trim()}
+                  disabled={!content.trim() || isSubmitting}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
-                  Post
+                  {isSubmitting ? "Posting..." : "Post"}
                 </Button>
               </div>
             </div>
