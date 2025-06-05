@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -28,7 +29,7 @@ export const usePosts = () => {
         .from('posts')
         .select(`
           *,
-          profiles!posts_user_id_fkey(username, full_name, avatar_url),
+          profiles:user_id(username, full_name, avatar_url),
           likes(user_id),
           comments(id)
         `)
